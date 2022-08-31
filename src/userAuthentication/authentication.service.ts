@@ -58,21 +58,58 @@ export class AuthenticationService{
 
     }
 
-    async getCookieWithJwtToken(id:number){
+    public getCookieWithJwtToken(id:number){
             const payload: TokenPayload = { userId:id };
             const token = this.jwtService.sign(payload);
            
             const cookie = {
                 Authentication:token,
                 cookieOptions:{
-                    expires:new Date( Date.now() + this.configService.get('JWT_EXPIRATION_TIME')*24*60*60*1000 ),
-                    httOnly:true
+                    maxAge:this.configService.get('JWT_EXPIRATION_TIME')*24*60*60*1000,
                 }
             }
             return cookie
              
             // Expires=${new Date(Date.now()+this.configService.get('JWT_EXPIRATION_TIME'))};`
     }
+    
+    public getCookieWithJwtAccessToken(id:number){
+        const payload: TokenPayload = { userId:id };
+        const token = this.jwtService.sign(payload,{
+            secret:this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+            expiresIn:`${this.configService.get('JWT_ACCESS_TOKEN_EXPIRY')*24*60*60*1000}s`
+        });
+       
+        const cookie = {
+            token:token,
+            cookieOptions:{
+                maxAge:this.configService.get('JWT_ACCESS_TOKEN_EXPIRY')*24*60*60*1000,
+               
+            }
+        }
+        return cookie
+         
+        // Expires=${new Date(Date.now()+this.configService.get('JWT_EXPIRATION_TIME'))};`
+}
+
+    public getCookieWithJwtRefreshToken(id:number){
+    const payload: TokenPayload = { userId:id };
+    const token = this.jwtService.sign(payload,{
+        secret:this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+        expiresIn:`${this.configService.get('JWT_REFRESH_TOKEN_EXPIRY')*24*60*60*1000}s`
+    });
+   
+    const cookie = {
+        token:token,
+        cookieOptions:{
+            maxAge:this.configService.get('JWT_REFRESH_TOKEN_EXPIRY')*24*60*60*1000,
+            path:'/authentication/refresh/'
+        }
+    }
+
+    return cookie
+}
+
     public getCookieForLogOut() {
         return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
       }

@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import CreateUserDto from "./dto/create.dto";
 import User from "./user.entity";
-
+import * as bcrypt from "bcrypt"
 @Injectable()
     export class UserService{
        
@@ -37,6 +37,16 @@ import User from "./user.entity";
             const newUser =  this.UserRepo.create(user);
             await this.UserRepo.save(newUser);
             return newUser;
+        }
+        async setCurrentRefresToken(token:string,id:number){
+            const currentRefToken = await bcrypt.hash(token,10);
+            await this.UserRepo.update(id,{currentHashedRefreshToken:currentRefToken});
+        }
+        async getUserIfRefreshTokenMatches(token:string,id:number){
+           const user = await this.getById(id);
+            let comparison = await bcrypt.compare(token,user.currentHashedRefreshToken);
+            if(comparison)
+            return user
         }
        
     }

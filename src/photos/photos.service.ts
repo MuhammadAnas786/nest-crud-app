@@ -38,7 +38,7 @@ export default class PhotoService {
     }
 
     async updatePhoto(id:number,photo:UpdatePhotoDto){
-        await this.photos.update(id, {id:id, ...photo});
+        await this.photos.update(id, { ...photo, id:id});
         return this.getPhotosById(id);
     }
 
